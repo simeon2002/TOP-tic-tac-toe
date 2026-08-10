@@ -28,7 +28,7 @@ const createGameBoard = function (rows, columns) {
 
   // Initialize gameboard
   function init() {
-    generateArray(rows, columns);
+    board = generateArray(rows, columns);
   }
 
   /**
@@ -65,11 +65,13 @@ const createGameBoard = function (rows, columns) {
    * @param {any} value Value to fill within
    */
   function generateArray(row = 3, cols = 3, value = "") {
-    board = new Array(rows);
+    const arr = new Array(rows);
 
-    for (let i = 0; i < board.length; i++) {
-      board[i] = new Array(cols).fill(value);
+    for (let i = 0; i < arr.length; i++) {
+      arr[i] = new Array(cols).fill(value);
     }
+
+    return arr;
   }
 
   /**
@@ -78,11 +80,65 @@ const createGameBoard = function (rows, columns) {
    * @param {string} marker Marker to apply on the coords
    */
   function makeMove(coords, marker) {
-    console.log(coords);
-    console.log(marker);
-
     board[coords[0]][coords[1]] = marker;
-    console.log(board);
+  }
+
+  /**
+   * Checks if the current player has 3 in a row somewhere.
+   * @param {string} currentPlayerMarker Marker of the current player
+   */
+  function has3InARow(currentPlayerMarker) {
+    const marker = "O";
+    const getMarkerCoords = () =>
+      board.reduce((idxArr, row, i) => {
+        row.forEach((el, j) => el === marker && idxArr.push(`${i},${j}`));
+        return idxArr;
+      }, []);
+    const checkMatch = (direction = "vertical", coords) => {
+      return coords.some((str, idx, arr) => {
+        const [row, col] = str.split(",");
+        const checkNextCoordsArr = Array.from({ length: 3 }, (_, i) => {
+          const position =
+            direction === "horizontal"
+              ? `${row},${+col + i}`
+              : direction === "vertical"
+                ? `${+row + i},${col}`
+                : direction === "diagonalLeftUpDown"
+                  ? `${+row + i},${+col + i}`
+                  : direction === "diagonalLeftDownUp"
+                    ? `${+row - i},${+col + i}`
+                    : "";
+          return arr.includes(position);
+        });
+
+        return checkNextCoordsArr.every(Boolean);
+      });
+    };
+
+    const markerCoords = getMarkerCoords();
+    // console.log(checkMatch("horizontal", markerCoords));
+    // console.log(checkMatch("vertical", markerCoords));
+    // console.log(checkMatch("diagonalLeftUpDown", markerCoords));
+    // console.log(checkMatch("diagonalLeftDownUp", markerCoords));
+
+    return [
+      checkMatch("horizontal", markerCoords),
+      checkMatch("vertical", markerCoords),
+      checkMatch("diagonalLeftUpDown", markerCoords),
+      checkMatch("diagonalLeftDownUp", markerCoords),
+    ].some(Boolean);
+
+    // check for row match
+    // const leftToRight = checkHorizontal(markerCoords);
+    // console.log(leftToRight);
+    // const verticalMatch = checkVertical(markerCoords);
+    // console.log(verticalMatch);
+
+    // leftToRight = markerCoords.reduce
+  }
+
+  function clearBoard() {
+    board = generateArray(rows, columns);
   }
 
   // getter and setter methods
@@ -90,7 +146,7 @@ const createGameBoard = function (rows, columns) {
     return { rows, columns };
   }
 
-  return { init, printBoard, getRowsAndCols, makeMove };
+  return { init, printBoard, clearBoard, getRowsAndCols, makeMove, has3InARow };
 };
 
 // Game module pattern function
@@ -127,13 +183,17 @@ const game = (function () {
     }
 
     // check if 3 in a row?
-
+    // board.has3InARow();
     // check if board is full
 
-    // Make player move
+    // Current player makes move
     board.makeMove([rowIdx, colIdx], players[currentPlayer].getMarker());
 
     // switch player turn
+    currentPlayer = 1 - currentPlayer;
+
+    // dipslay new player's turn messgae
+    console.log(`${players[currentPlayer].getName()}'s turn`);
 
     // display board again
     board.printBoard();
@@ -156,7 +216,39 @@ const game = (function () {
     return players;
   }
 
-  return { startGame, getBoard, getPlayersScore, getPlayers, playerTurn };
+  function playDemoGame() {
+    game.playerTurn(2, 2);
+    // p2
+    game.playerTurn(1, 0);
+    // p3
+    game.playerTurn(2, 1);
+    // p4
+    game.playerTurn(1, 0);
+    // p5
+    game.playerTurn(2, 0);
+    game.playerTurn(1, 1);
+    // p6
+    game.playerTurn(1, 2);
+    game.playerTurn(1, 1);
+    game.playerTurn(0, 2);
+    console.log(board.has3InARow(players[currentPlayer].getMarker()));
+  }
+
+  function playDemoGameDiagonal() {
+    board.clearBoard();
+    game.playerTurn(0, 0);
+    game.playerTurn(0, 1);
+    game.playerTurn(1, 1);
+    game.playerTurn(1, 0);
+    game.playerTurn(2, 2);
+    game.playerTurn(2, 1);
+    game.playerTurn(2, 0);
+    game.playerTurn(1, 0);
+    game.playerTurn(0, 2);
+    console.log(board.has3InARow(players[currentPlayer].getMarker()));
+  }
+
+  return { startGame, playDemoGame, playDemoGameDiagonal, getBoard, getPlayersScore, getPlayers, playerTurn };
 })();
 
 // start a game
@@ -164,4 +256,6 @@ game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
 // game.playerTurn(4, 4);
 // game.playerTurn(-4, 4);
 // game.playerTurn(undefined, 4);
-game.playerTurn(2, 2);
+// p1
+// game.playDemoGame();
+game.playDemoGameDiagonal();
