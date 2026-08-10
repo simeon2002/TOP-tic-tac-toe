@@ -72,7 +72,25 @@ const createGameBoard = function (rows, columns) {
     }
   }
 
-  return { init, printBoard };
+  /**
+   * Makes a move on the board
+   * @param {Array} coords row and col coordinates
+   * @param {string} marker Marker to apply on the coords
+   */
+  function makeMove(coords, marker) {
+    console.log(coords);
+    console.log(marker);
+
+    board[coords[0]][coords[1]] = marker;
+    console.log(board);
+  }
+
+  // getter and setter methods
+  function getRowsAndCols() {
+    return { rows, columns };
+  }
+
+  return { init, printBoard, getRowsAndCols, makeMove };
 };
 
 // Game module pattern function
@@ -100,6 +118,30 @@ const game = (function () {
    * Players' plays a turn on the board
    *
    */
+  function playerTurn(rowIdx, colIdx) {
+    // input check
+    const { rows, columns } = board.getRowsAndCols();
+    if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
+      console.log("Please provide a row index and column index within the range");
+      return;
+    }
+
+    // check if 3 in a row?
+
+    // check if board is full
+
+    // Make player move
+    board.makeMove([rowIdx, colIdx], players[currentPlayer].getMarker());
+
+    // switch player turn
+
+    // display board again
+    board.printBoard();
+  }
+
+  function isValidTurn(rowIdx, colIdx, rows, columns) {
+    return rowIdx >= 0 && rowIdx < rows && colIdx >= 0 && colIdx < columns;
+  }
 
   // gettter and setter methods
   function getBoard() {
@@ -114,8 +156,12 @@ const game = (function () {
     return players;
   }
 
-  return { startGame, getBoard, getPlayersScore, getPlayers };
+  return { startGame, getBoard, getPlayersScore, getPlayers, playerTurn };
 })();
 
 // start a game
 game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
+// game.playerTurn(4, 4);
+// game.playerTurn(-4, 4);
+// game.playerTurn(undefined, 4);
+game.playerTurn(2, 2);
