@@ -15,10 +15,33 @@
   </head>
   <body>
     <div class="game-container">
-      <div class="play-container">
+      <div class="start-container hidden">
         <h1 class="heading-primary">Welcome to TicTacToe!</h1>
         <p class="start-desc">Whenever you are ready to start a game, click on 'play round' and you'll get started right away!</p>
         <button class="btn btn--play">Play Round</button>
+      </div>
+      <div class="play-container">
+        <div class="player-scores">
+          <div class="player-card">
+            <h2 class="player-card__name heading-secondary">Player 1: <span class="player-name">Simeon</span></h2>
+            <p class="player-card__score"><span class="label">Score:</span> 1</p>
+          </div>
+          <div class="player-card">
+            <h2 class="player-card__name heading-secondary">Player 2: <span class="player-name">Darina</span></h2>
+            <p class="player-card__score"><span class="label">Score:</span> 1</p>
+          </div>
+        </div>
+        <div class="grid grid--game">
+          <div class="btn--grid"></div>
+          <div class="btn--grid"></div>
+          <div class="btn--grid"></div>
+          <div class="btn--grid"></div>
+          <div class="btn--grid"></div>
+          <div class="btn--grid"></div>
+          <div class="btn--grid"></div>
+          <div class="btn--grid"></div>
+          <div class="btn--grid"></div>
+        </div>
       </div>
     </div>
   </body>

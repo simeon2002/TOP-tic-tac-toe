@@ -83,15 +83,23 @@ body {
 }
 
 .game-container {
-  display: flex;
-  align-items: center;
+  display: grid;
+  place-items: center;
+s}
+
+.start-container,
+.play-container {
+  grid-area: 1 / 1;
 }
 
-.play-container {
+/* starter screen  */
+.start-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  justify-self: center;
   max-width: 100rem;
+  max-height: 50rem;
   padding-inline: var(--space-200);
   opacity: 1;
   transform: scale(1);
@@ -106,6 +114,64 @@ body {
 .btn--play {
   align-self: start;
 }
+
+/* Game screen  */
+.grid {
+  display: grid;
+  max-width: 120rem;
+}
+
+.grid--game {
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  grid-template-rows: repeat(3, minmax(150px, 1fr));
+  border: 2px solid var(--clr-black);
+}
+
+.btn--grid {
+  color: var(--clr-white);
+  border: 2px solid var(--clr-black);
+  cursor: pointer;
+}
+
+.btn--grid:hover {
+  background-color: var(--clr-green-light);
+  box-shadow: 0 1rem 2rem .5rem hsl(0, 0%, 0%, 0.2);
+  transition: all 0.3s ease-out;
+}
+
+.player-scores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: var(--space-400);
+  margin-bottom: var(--space-400);
+}
+
+.player-card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2;
+  gap: var(--space-100);
+  background-color: var(--clr-green);
+  color: var(--clr-white);
+  padding: var(--space-400);
+  border-radius: 8px;
+  box-shadow: 0 1rem 2rem hsl(0, 0%, 0%, 0.1);
+}
+
+/* .player-card:first-child {
+  justify-self: start;
+}
+
+.player-card:last-child {
+  justify-self: end;
+} */
+
+.label {
+  font-weight: var(--fw-bold);
+}
+
 /********************************************/
 /* REUSABLE COMPONENTS */
 /********************************************/
@@ -135,10 +201,15 @@ body {
   margin-bottom: var(--space-100);
 }
 
+.heading-secondary {
+  font-size: var(--fs-500);
+}
+
 .hidden {
   visibility: hidden;
   opacity: 0;
   transform: scale(0);
+  max-height: 0;
   transition:
     opacity 0.3s,
     transform 1s,
