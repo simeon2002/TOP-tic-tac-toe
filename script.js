@@ -8,6 +8,10 @@ const createPlayer = function (name, marker) {
     return score;
   }
 
+  function incrementScore() {
+    score++;
+  }
+
   function getName() {
     return name;
   }
@@ -17,10 +21,10 @@ const createPlayer = function (name, marker) {
   }
 
   function printPlayerInfo() {
-    console.log(`${name}: ${marker}`);
+    console.log(`${name} (${marker}): ${score} points`);
   }
 
-  return { getScore, getName, getMarker, printPlayerInfo };
+  return { getScore, incrementScore, getName, getMarker, printPlayerInfo };
 };
 
 const createGameBoard = function (rows, columns) {
@@ -171,19 +175,34 @@ const createGameBoard = function (rows, columns) {
 const game = (function () {
   let board, players, currentPlayer;
 
-  // Initialize a game
+  /**
+   *  Initialize a game
+   */
   function startGame(...newPlayers) {
+    console.log("Starting a game...");
     // init state
     board = createGameBoard(3, 3);
     board.init();
     players = newPlayers;
     currentPlayer = 0;
 
-    displayInitialState();
+    // Start a round
+    while (true) {
+      const playRoundFlag = confirm("Start a round");
+      if (playRoundFlag) {
+        console.log("Starting a round...");
+        setTimeout(() => {
+          playRoundDemo();
+        }, 5000);
+        break;
+      }
+    }
   }
 
-  function displayInitialState() {
-    console.log("Starting a game...");
+  /**
+   * Displays initial state of the board
+   */
+  function displayGameState() {
     players.forEach(player => player.printPlayerInfo());
     board.printBoard();
   }
@@ -191,8 +210,10 @@ const game = (function () {
   /**
    * Play a round of tic tac toe
    */
-  function playRound() {
+  function playRoundDemo() {
     const { rows, cols } = board.getRowsAndCols();
+    board.clearBoard();
+    displayGameState();
 
     while (true) {
       const position = prompt(
@@ -202,7 +223,18 @@ const game = (function () {
       const [row, col] = position.split(",").map(pos => +pos - 1);
 
       // player takes turn
-      playerTurn(row, col);
+      const gameEndedFlag = playerTurn(row, col);
+      // temporary to start another round
+      if (gameEndedFlag) {
+        const nextStep = prompt("type 'play' to play another round, else game is reset");
+        if (nextStep !== "play") {
+          // resetGame()
+          console.log("Ending game....");
+          break;
+        }
+        playRoundDemo(); // playing a round using recursion
+        break;
+      }
     }
   }
 
@@ -230,15 +262,16 @@ const game = (function () {
     // check if 3 in a row?
     if (board.has3InARow(players[currentPlayer].getMarker())) {
       displayMessage(`${players[currentPlayer].getName()} with marker ${players[currentPlayer].getMarker()} has 3 in a row!`);
-      board.printBoard();
-      return;
+      players[currentPlayer].incrementScore();
+      displayGameState();
+      return true;
     }
 
     // check if board is full
     if (board.isFull()) {
       displayMessage("The board is full... a draw!");
       board.printBoard();
-      return;
+      return true;
     }
 
     // switch player turn
@@ -307,11 +340,12 @@ const game = (function () {
     console.log(board.has3InARow(players[currentPlayer].getMarker()));
   }
 
-  return { startGame, playRound, playDemoGame, playDemoGameDiagonal, getBoard, getPlayersScore, getPlayers, playerTurn };
+  return { startGame, playerTurn, getBoard, getPlayersScore, getPlayers };
 })();
 
 // start a game
 game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
+
 // game.playerTurn(4, 4);
 // game.playerTurn(-4, 4);
 // game.playerTurn(undefined, 4);
@@ -320,4 +354,4 @@ game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
 // game.playDemoGameDiagonal();
 
 // testing cases in the game...
-game.playRound();
+// game.playRound();
