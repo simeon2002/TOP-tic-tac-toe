@@ -172,7 +172,7 @@ const createGameBoard = function (rows, columns) {
 };
 
 // Game module pattern function
-const game = (function () {
+const createGame = function () {
   let board, players, currentPlayer;
 
   /**
@@ -187,24 +187,24 @@ const game = (function () {
     currentPlayer = 0;
 
     // Start a round
-    while (true) {
-      const playRoundFlag = confirm("Start a round");
-      if (playRoundFlag) {
-        console.log("Starting a round...");
-        setTimeout(() => {
-          playRoundDemo();
-        }, 5000);
-        break;
-      }
-    }
+    // while (true) {
+    //   const playRoundFlag = confirm("Start a round");
+    //   if (playRoundFlag) {
+    //     console.log("Starting a round...");
+    //     setTimeout(() => {
+    //       playRoundDemo();
+    //     }, 5000);
+    //     break;
+    //   }
+    // }
   }
 
   /**
    * Displays initial state of the board
    */
-  // function displayGameState() {
-  //   players.forEach(player => player.printPlayerInfo());
-  //   board.printBoard();
+  function displayGameState() {
+    players.forEach(player => player.printPlayerInfo());
+    board.printBoard();
   }
 
   /**
@@ -305,6 +305,10 @@ const game = (function () {
     return players;
   }
 
+  function getBoardRowsAndCols() {
+    return board.getRowsAndCols();
+  }
+
   function playDemoGame() {
     game.playerTurn(2, 2);
     // p2
@@ -340,11 +344,56 @@ const game = (function () {
     console.log(board.has3InARow(players[currentPlayer].getMarker()));
   }
 
-  return { startGame, playerTurn, getBoard, getPlayersScore, getPlayers };
+  return { startGame, playerTurn, getBoard, getPlayersScore, getBoardRowsAndCols, getPlayers };
+};
+
+const screenController = (function () {
+  let game;
+  const playBtn = document.querySelector(".btn--play");
+  const startContainer = document.querySelector(".start-container");
+  const playContainer = document.querySelector(".play-container");
+  const gameGrid = playContainer.querySelector(".grid--game");
+  console.log(playBtn);
+
+  init();
+
+  function init() {
+    // Initiate a game
+    game = createGame();
+    game.startGame(createPlayer("Simeon", "X"), createPlayer("Darina", "O"));
+
+    // initialize event handlers
+    playBtn.addEventListener("click", handlePlayBtnClick);
+  }
+
+  function handlePlayBtnClick(e) {
+    console.log(e);
+
+    // (for now only handle initial game state)
+    startContainer.classList.add("hidden");
+    playContainer.classList.remove("hidden");
+    createGrid(game.getBoardRowsAndCols());
+  }
+
+  /**
+   * Create a grid programmatically to dipslay on the screen with any grid size
+   * @param {number} rows Row els to create
+   * @param {number} cols columns to create
+   */
+  function createGrid({ rows, columns }) {
+    let html = "";
+
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
+        html += `<div class="btn--grid" tabindex="0" role="button" data-row=${rows[i]} data-col=columns[j]></div>`;
+      }
+    }
+    gameGrid.insertAdjacentHTML("afterbegin", html);
+  }
 })();
 
 // start a game
-game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
+// game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
 
 // game.playerTurn(4, 4);
 // game.playerTurn(-4, 4);
