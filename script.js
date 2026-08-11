@@ -88,7 +88,7 @@ const createGameBoard = function (rows, columns) {
    * @param {string} currentPlayerMarker Marker of the current player
    */
   function has3InARow(currentPlayerMarker) {
-    const marker = "O";
+    const marker = currentPlayerMarker;
     const getMarkerCoords = () =>
       board.reduce((idxArr, row, i) => {
         row.forEach((el, j) => el === marker && idxArr.push(`${i},${j}`));
@@ -189,6 +189,24 @@ const game = (function () {
   }
 
   /**
+   * Play a round of tic tac toe
+   */
+  function playRound() {
+    const { rows, cols } = board.getRowsAndCols();
+
+    while (true) {
+      const position = prompt(
+        `Please provide a , separated position (e.g. 1,2 = row,col) from 1 to ${rows} for rows and from 1 to ${cols} for columns`,
+      );
+
+      const [row, col] = position.split(",").map(pos => +pos - 1);
+
+      // player takes turn
+      playerTurn(row, col);
+    }
+  }
+
+  /**
    * Players' plays a turn on the board
    *
    */
@@ -196,13 +214,13 @@ const game = (function () {
     // input validation
     const { rows, columns } = board.getRowsAndCols();
     if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
-      console.log("Please provide a row index and column index within the range");
+      displayMessage("Please provide a row index and column index within the range");
       return;
     }
 
     // Position already filled?
     if (board.isPositionTaken(rowIdx, colIdx)) {
-      console.log("Position has already been taken, please provide another!");
+      displayMessage("Position has already been taken, please provide another!");
       return;
     }
 
@@ -210,15 +228,15 @@ const game = (function () {
     board.makeMove([rowIdx, colIdx], players[currentPlayer].getMarker());
 
     // check if 3 in a row?
-    if (board.has3InARow()) {
-      console.log(`${players[currentPlayer].getName()} with marker ${players[currentPlayer].getMarker()} has 3 in a row!`);
+    if (board.has3InARow(players[currentPlayer].getMarker())) {
+      displayMessage(`${players[currentPlayer].getName()} with marker ${players[currentPlayer].getMarker()} has 3 in a row!`);
       board.printBoard();
       return;
     }
 
     // check if board is full
     if (board.isFull()) {
-      console.log("The board is full... a draw!");
+      displayMessage("The board is full... a draw!");
       board.printBoard();
       return;
     }
@@ -235,6 +253,10 @@ const game = (function () {
 
   function isValidTurn(rowIdx, colIdx, rows, columns) {
     return rowIdx >= 0 && rowIdx < rows && colIdx >= 0 && colIdx < columns;
+  }
+
+  function displayMessage(message) {
+    console.log(message);
   }
 
   // gettter and setter methods
@@ -285,7 +307,7 @@ const game = (function () {
     console.log(board.has3InARow(players[currentPlayer].getMarker()));
   }
 
-  return { startGame, playDemoGame, playDemoGameDiagonal, getBoard, getPlayersScore, getPlayers, playerTurn };
+  return { startGame, playRound, playDemoGame, playDemoGameDiagonal, getBoard, getPlayersScore, getPlayers, playerTurn };
 })();
 
 // start a game
@@ -294,5 +316,8 @@ game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
 // game.playerTurn(-4, 4);
 // game.playerTurn(undefined, 4);
 // p1
-game.playDemoGame();
+// game.playDemoGame();
 // game.playDemoGameDiagonal();
+
+// testing cases in the game...
+game.playRound();
