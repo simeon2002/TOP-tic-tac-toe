@@ -151,12 +151,20 @@ const createGameBoard = function (rows, columns) {
     return true;
   }
 
+  /**
+   * Function to check if a board is filled or not
+   * @returns true if full, false otherwise
+   */
+  function isFull() {
+    return board.every(row => row.every(col => col !== ""));
+  }
+
   // getter and setter methods
   function getRowsAndCols() {
     return { rows, columns };
   }
 
-  return { init, printBoard, clearBoard, isPositionTaken, getRowsAndCols, makeMove, has3InARow };
+  return { init, printBoard, clearBoard, isPositionTaken, isFull, getRowsAndCols, makeMove, has3InARow };
 };
 
 // Game module pattern function
@@ -193,22 +201,27 @@ const game = (function () {
     }
 
     // Position already filled?
-    console.log(board.isPositionTaken(rowIdx, colIdx));
-
     if (board.isPositionTaken(rowIdx, colIdx)) {
       console.log("Position has already been taken, please provide another!");
       return;
     }
 
+    // Current player makes move
+    board.makeMove([rowIdx, colIdx], players[currentPlayer].getMarker());
+
     // check if 3 in a row?
     if (board.has3InARow()) {
-      console.log("Has 3 in a row!");
+      console.log(`${players[currentPlayer].getName()} with marker ${players[currentPlayer].getMarker()} has 3 in a row!`);
+      board.printBoard();
+      return;
     }
 
     // check if board is full
-
-    // Current player makes move
-    board.makeMove([rowIdx, colIdx], players[currentPlayer].getMarker());
+    if (board.isFull()) {
+      console.log("The board is full... a draw!");
+      board.printBoard();
+      return;
+    }
 
     // switch player turn
     currentPlayer = 1 - currentPlayer;
@@ -253,6 +266,8 @@ const game = (function () {
     game.playerTurn(1, 2);
     game.playerTurn(1, 1);
     game.playerTurn(0, 2);
+    game.playerTurn(0, 1);
+    game.playerTurn(0, 0);
     console.log(board.has3InARow(players[currentPlayer].getMarker()));
   }
 
