@@ -105,14 +105,19 @@ s}
   transform: scale(1);
 }
 
-.start-desc {
+.desc {
   align-self: start;
   max-width: 50rem;
   margin-bottom: var(--space-300);
 }
 
 .btn--play {
-  align-self: start;
+  /* align-self: start; */
+  margin-right: var(--space-200);
+}
+
+.btn--reset {
+  display: none;
 }
 
 /* Game screen  */
