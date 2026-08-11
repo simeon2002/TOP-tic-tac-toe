@@ -202,9 +202,9 @@ const game = (function () {
   /**
    * Displays initial state of the board
    */
-  function displayGameState() {
-    players.forEach(player => player.printPlayerInfo());
-    board.printBoard();
+  // function displayGameState() {
+  //   players.forEach(player => player.printPlayerInfo());
+  //   board.printBoard();
   }
 
   /**
