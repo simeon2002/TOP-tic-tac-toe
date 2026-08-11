@@ -1,0 +1,72 @@
+@import "node_modules/modern-normalize/modern-normalize.css";
+@import "reset.css";
+
+/********************************************/
+/* DESIGN SYSTEM */
+/********************************************/
+:root {
+  font-size: 62.5%; /* Start with 10px as default relative font size assuming default browser font size of 16px*/
+
+  /*****  COLORS (primary, secondary, accents and greys) *****/
+  --clr-white: #fff;
+  --clr-black: hsl(0, 0%, 0%);
+  --clr-grey: rgb(117, 117, 117);
+  --clr-green: green;
+  --clr-green-light: rgba(0, 128, 0, 0.772);
+
+  /***** TYPOGRAPHY *****/
+  /* font weights */
+  --fw-bold: 700;
+  --fw-medium: 500;
+  --fw-regular: 400;
+
+  /* - Font sizes (px) */
+  --fs-100: 1rem; /* 10px */
+  --fs-200: 1.2rem; /* 12px */
+  --fs-300: 1.4rem; /* 14px */
+  --fs-400: 1.6rem; /* 16px */
+  --fs-500: 1.8rem; /* 18px */
+  --fs-600: 2rem; /* 20px */
+  --fs-700: 2.4rem; /* 24px */
+  --fs-800: 3rem; /* 30px */
+  --fs-900: 3.6rem; /* 36px */
+  --fs-1000: 4.4rem; /* 44px */
+  --fs-1100: 5.2rem; /* 52px */
+  --fs-1200: 6.2rem; /* 62px */
+  --fs-1300: 7.4rem; /* 74px */
+  --fs-1400: 8.6rem; /* 86px */
+  --fs-1500: 9.8rem; /* 98px */
+
+  /* letter spacing */
+  /* line heights */
+
+  /***** WHITESPACE *****/
+  /* spacing system */
+  --space-20: 0.2rem;
+  --space-50: 0.4rem;
+  --space-100: 0.8rem;
+  --space-200: 1.6rem;
+  --space-300: 2.4rem;
+  --space-400: 3.2rem;
+  --space-600: 4.8rem;
+  --space-800: 6.4rem;
+  --space-1000: 8rem;
+  --space-1200: 9.6rem;
+  --space-1600: 12.8rem;
+
+  /***** SHADOWS *****/
+
+  /***** BORDER RADIUS *****/
+}
+
+/********************************************/
+/* SPECIFIC STYLES */
+/********************************************/
+
+/********************************************/
+/* REUSABLE COMPONENTS */
+/********************************************/
+
+/********************************************/
+/* UTILITY / HELPER CLASSES */
+/********************************************/
