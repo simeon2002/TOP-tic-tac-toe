@@ -168,7 +168,11 @@ const createGameBoard = function (rows, columns) {
     return { rows, columns };
   }
 
-  return { init, printBoard, clearBoard, isPositionTaken, isFull, getRowsAndCols, makeMove, has3InARow };
+  function getBoard() {
+    return board;
+  }
+
+  return { init, printBoard, getBoard, clearBoard, isPositionTaken, isFull, getRowsAndCols, makeMove, has3InARow };
 };
 
 // Game module pattern function
@@ -239,10 +243,56 @@ const createGame = function () {
   }
 
   /**
+   * Players' plays a turn on the board (with console)
+   *
+   */
+  function playerTurnDemo(rowIdx, colIdx) {
+    // input validation
+    const { rows, columns } = board.getRowsAndCols();
+    if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
+      displayMessage("Please provide a row index and column index within the range");
+      return;
+    }
+
+    // Position already filled?
+    if (board.isPositionTaken(rowIdx, colIdx)) {
+      displayMessage("Position has already been taken, please provide another!");
+      return;
+    }
+
+    // Current player makes move
+    board.makeMove([rowIdx, colIdx], players[currentPlayer].getMarker());
+
+    // check if 3 in a row?
+    if (board.has3InARow(players[currentPlayer].getMarker())) {
+      displayMessage(`${players[currentPlayer].getName()} with marker ${players[currentPlayer].getMarker()} has 3 in a row!`);
+      players[currentPlayer].incrementScore();
+      displayGameState();
+      return true;
+    }
+
+    // check if board is full
+    if (board.isFull()) {
+      displayMessage("The board is full... a draw!");
+      board.printBoard();
+      return true;
+    }
+
+    // switch player turn
+    currentPlayer = 1 - currentPlayer;
+
+    // dipslay new player's turn messgae
+    console.log(`${players[currentPlayer].getName()}'s turn`);
+
+    // display board again
+    board.printBoard();
+  }
+
+  /**
    * Players' plays a turn on the board
    *
    */
-  function playerTurn(rowIdx, colIdx) {
+  function playerTurn(handlePositionTaken) {
     // input validation
     const { rows, columns } = board.getRowsAndCols();
     if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
@@ -293,8 +343,8 @@ const createGame = function () {
   }
 
   // gettter and setter methods
-  function getBoard() {
-    return board;
+  function getBoardGrid() {
+    return board.getBoard();
   }
 
   function getPlayersScore() {
@@ -303,10 +353,6 @@ const createGame = function () {
 
   function getPlayers() {
     return players;
-  }
-
-  function getBoardRowsAndCols() {
-    return board.getRowsAndCols();
   }
 
   function playDemoGame() {
@@ -344,7 +390,7 @@ const createGame = function () {
     console.log(board.has3InARow(players[currentPlayer].getMarker()));
   }
 
-  return { startGame, playerTurn, getBoard, getPlayersScore, getBoardRowsAndCols, getPlayers };
+  return { startGame, playerTurn, getBoardGrid, getPlayersScore, getPlayers };
 };
 
 const screenController = (function () {
@@ -364,15 +410,25 @@ const screenController = (function () {
 
     // initialize event handlers
     playBtn.addEventListener("click", handlePlayBtnClick);
+    gameGrid.addEventListener("click", handleGridElClick);
   }
 
   function handlePlayBtnClick(e) {
-    console.log(e);
-
     // (for now only handle initial game state)
     startContainer.classList.add("hidden");
     playContainer.classList.remove("hidden");
-    createGrid(game.getBoardRowsAndCols());
+    showGrid(game.getBoardGrid());
+  }
+
+  function handleGridElClick(e) {
+    const gridEl = e.target.closest(".btn--grid");
+    console.log(gridEl);
+
+    // note: so now we have to check for pos taken? 3 in a row, board full etc etc. But.. instead of doing it here, we have separated the logic inside its own class (SEPARATION OF CONCERNS). So, the DOM controller has its own responsibities and can only interact through the API and read things to dipslay stuff in the UI. (it is the outer world gateway which interacts with the application logic and state.) Those are essentially internal state checks and settings things (like swtiching player internally) which are all the responsibility of the domain modeling classes. As you can see below, instead of doing all this, we just provide input from the DOM into the game class to actually modify all this state internally instead.
+
+    game.playerTurn(gridEl.dataset.row, gridEl.dataset.col);
+    // update grid (full grid at this point of time. TODO: make it update per cell only)
+    showGrid(game.getBoardGrid());
   }
 
   /**
@@ -380,15 +436,47 @@ const screenController = (function () {
    * @param {number} rows Row els to create
    * @param {number} cols columns to create
    */
-  function createGrid({ rows, columns }) {
+  function showGrid(board) {
     let html = "";
+    const [rows, columns] = [board.length, board[0].length];
+    console.log(board);
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < columns; j++) {
-        html += `<div class="btn--grid" tabindex="0" role="button" data-row=${rows[i]} data-col=columns[j]></div>`;
+        html += `<div class="btn--grid" tabindex="0" role="button" data-row="${i}" data-col="${j}">
+        <span>${board[i][j]}</span></div>`;
       }
     }
+
+    gameGrid.innerHTML = "";
     gameGrid.insertAdjacentHTML("afterbegin", html);
+  }
+
+  function positionTakenAnimation(row, col) {
+    const gridEl = gameGrid.querySelector(`[data-row=${row}][data-col=${col}]`);
+
+    console.log(gridEl);
+
+    const shake = [
+      { transform: "translate(1px, 1px) rotate(0deg)" },
+      { transform: "translate(-1px, -2px) rotate(-1deg)" },
+      { transform: "translate(-3px, 0px) rotate(1deg)" },
+      { transform: "translate(3px, 2px) rotate(0deg)" },
+      { transform: "translate(1px, -1px) rotate(1deg)" },
+      { transform: "translate(-1px, 2px) rotate(-1deg)" },
+      { transform: "translate(-3px, 1px) rotate(0deg)" },
+      { transform: "translate(3px, 1px) rotate(-1deg)" },
+      { transform: "translate(-1px, -1px) rotate(1deg)" },
+      { transform: "translate(1px, 2px) rotate(0deg)" },
+      { transform: "translate(1px, -2px) rotate(-1deg)" },
+    ];
+
+    const shakeTiming = {
+      duration: 4000,
+      iterations: 1,
+    };
+
+    gridEl.animate(shake, shakeTiming);
   }
 })();
 

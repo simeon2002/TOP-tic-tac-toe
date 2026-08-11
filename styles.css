@@ -151,7 +151,7 @@ s}
   transition: all 0.3s ease-out;
 }
 
-.btn--grid:focus {
+.btn--grid:focus-visible {
   box-shadow: 0 1rem 2rem .5rem hsl(0, 0%, 0%, 0.2);
 }
 
