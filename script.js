@@ -141,12 +141,22 @@ const createGameBoard = function (rows, columns) {
     board = generateArray(rows, columns);
   }
 
+  /**
+   * Checks if a position is already filled or not
+   * @param {number} row Row number to check
+   * @param {number} col Column number to checdk
+   */
+  function isPositionTaken(row, col) {
+    if (board[row][col] === "") return false;
+    return true;
+  }
+
   // getter and setter methods
   function getRowsAndCols() {
     return { rows, columns };
   }
 
-  return { init, printBoard, clearBoard, getRowsAndCols, makeMove, has3InARow };
+  return { init, printBoard, clearBoard, isPositionTaken, getRowsAndCols, makeMove, has3InARow };
 };
 
 // Game module pattern function
@@ -175,15 +185,26 @@ const game = (function () {
    *
    */
   function playerTurn(rowIdx, colIdx) {
-    // input check
+    // input validation
     const { rows, columns } = board.getRowsAndCols();
     if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
       console.log("Please provide a row index and column index within the range");
       return;
     }
 
+    // Position already filled?
+    console.log(board.isPositionTaken(rowIdx, colIdx));
+
+    if (board.isPositionTaken(rowIdx, colIdx)) {
+      console.log("Position has already been taken, please provide another!");
+      return;
+    }
+
     // check if 3 in a row?
-    // board.has3InARow();
+    if (board.has3InARow()) {
+      console.log("Has 3 in a row!");
+    }
+
     // check if board is full
 
     // Current player makes move
@@ -223,6 +244,7 @@ const game = (function () {
     // p3
     game.playerTurn(2, 1);
     // p4
+
     game.playerTurn(1, 0);
     // p5
     game.playerTurn(2, 0);
@@ -257,5 +279,5 @@ game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
 // game.playerTurn(-4, 4);
 // game.playerTurn(undefined, 4);
 // p1
-// game.playDemoGame();
-game.playDemoGameDiagonal();
+game.playDemoGame();
+// game.playDemoGameDiagonal();
