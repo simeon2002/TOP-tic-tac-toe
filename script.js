@@ -163,6 +163,10 @@ const createGameBoard = function (rows, columns) {
     return board.every(row => row.every(col => col !== ""));
   }
 
+  function isCellEmpty(row, col) {
+    return board[row][col] === "";
+  }
+
   // getter and setter methods
   function getRowsAndCols() {
     return { rows, columns };
@@ -172,7 +176,7 @@ const createGameBoard = function (rows, columns) {
     return board;
   }
 
-  return { init, printBoard, getBoard, clearBoard, isPositionTaken, isFull, getRowsAndCols, makeMove, has3InARow };
+  return { init, printBoard, getBoard, clearBoard, isCellEmpty, isPositionTaken, isFull, getRowsAndCols, makeMove, has3InARow };
 };
 
 // Game module pattern function
@@ -292,7 +296,7 @@ const createGame = function () {
    * Players' plays a turn on the board
    *
    */
-  function playerTurn(handlePositionTaken) {
+  function playerTurn(rowIdx, colIdx, handlePositionTaken, displayGrid) {
     // input validation
     const { rows, columns } = board.getRowsAndCols();
     if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
@@ -303,6 +307,7 @@ const createGame = function () {
     // Position already filled?
     if (board.isPositionTaken(rowIdx, colIdx)) {
       displayMessage("Position has already been taken, please provide another!");
+      handlePositionTaken(rowIdx, colIdx);
       return;
     }
 
@@ -313,6 +318,7 @@ const createGame = function () {
     if (board.has3InARow(players[currentPlayer].getMarker())) {
       displayMessage(`${players[currentPlayer].getName()} with marker ${players[currentPlayer].getMarker()} has 3 in a row!`);
       players[currentPlayer].incrementScore();
+      displayGrid(board.getBoard());
       displayGameState();
       return true;
     }
@@ -320,6 +326,7 @@ const createGame = function () {
     // check if board is full
     if (board.isFull()) {
       displayMessage("The board is full... a draw!");
+      displayGrid(board.getBoard());
       board.printBoard();
       return true;
     }
@@ -332,6 +339,7 @@ const createGame = function () {
 
     // display board again
     board.printBoard();
+    displayGrid(board.getBoard());
   }
 
   function isValidTurn(rowIdx, colIdx, rows, columns) {
@@ -345,6 +353,10 @@ const createGame = function () {
   // gettter and setter methods
   function getBoardGrid() {
     return board.getBoard();
+  }
+
+  function isCellEmpty(row, col) {
+    return board.isCellEmpty(row, col);
   }
 
   function getPlayersScore() {
@@ -390,7 +402,7 @@ const createGame = function () {
     console.log(board.has3InARow(players[currentPlayer].getMarker()));
   }
 
-  return { startGame, playerTurn, getBoardGrid, getPlayersScore, getPlayers };
+  return { startGame, playerTurn, getBoardGrid, isCellEmpty, getPlayersScore, getPlayers };
 };
 
 const screenController = (function () {
@@ -422,19 +434,17 @@ const screenController = (function () {
 
   function handleGridElClick(e) {
     const gridEl = e.target.closest(".btn--grid");
+    const [row, col] = [gridEl.dataset.row, gridEl.dataset.col];
     console.log(gridEl);
 
     // note: so now we have to check for pos taken? 3 in a row, board full etc etc. But.. instead of doing it here, we have separated the logic inside its own class (SEPARATION OF CONCERNS). So, the DOM controller has its own responsibities and can only interact through the API and read things to dipslay stuff in the UI. (it is the outer world gateway which interacts with the application logic and state.) Those are essentially internal state checks and settings things (like swtiching player internally) which are all the responsibility of the domain modeling classes. As you can see below, instead of doing all this, we just provide input from the DOM into the game class to actually modify all this state internally instead.
 
-    game.playerTurn(gridEl.dataset.row, gridEl.dataset.col);
-    // update grid (full grid at this point of time. TODO: make it update per cell only)
-    showGrid(game.getBoardGrid());
+    game.playerTurn(row, col, positionTakenAnimation, showGrid);
   }
 
   /**
    * Create a grid programmatically to dipslay on the screen with any grid size
-   * @param {number} rows Row els to create
-   * @param {number} cols columns to create
+   * @param {array} board 2D board grid
    */
   function showGrid(board) {
     let html = "";
@@ -453,8 +463,7 @@ const screenController = (function () {
   }
 
   function positionTakenAnimation(row, col) {
-    const gridEl = gameGrid.querySelector(`[data-row=${row}][data-col=${col}]`);
-
+    const gridEl = gameGrid.querySelector(`.btn--grid[data-row="${row}"][data-col="${col}"]`);
     console.log(gridEl);
 
     const shake = [
@@ -472,7 +481,7 @@ const screenController = (function () {
     ];
 
     const shakeTiming = {
-      duration: 4000,
+      duration: 500,
       iterations: 1,
     };
 
