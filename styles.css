@@ -116,9 +116,9 @@ s}
   margin-right: var(--space-200);
 }
 
-.btn--reset {
+/* .btn--reset {
   display: none;
-}
+} */
 
 /* Game screen  */
 .grid {
