@@ -329,6 +329,7 @@ const createGame = function () {
     // check if board is full
     if (board.isFull()) {
       displayMessage("The board is full... a draw!");
+      board.clearBoard();
       switchScreen("endRoundDraw");
       board.printBoard();
       return true;
@@ -546,22 +547,25 @@ const screenController = (function () {
   function changeEndRoundContent(hasWinner) {
     // input validation
     if (typeof hasWinner !== "boolean") console.log("Please provide a boolean value");
+    const title = startContainer.querySelector(".heading-primary");
+    const desc = startContainer.querySelector(".desc");
 
     // dispay end screen
     switchScreen("endRound");
 
+    // in case of winner
     if (hasWinner) {
       const winningPlayer = game.getWinningPlayer();
       const winnerName = winningPlayer.getName();
 
-      const title = startContainer.querySelector(".heading-primary");
-      const desc = startContainer.querySelector(".desc");
       title.textContent = `${winnerName} won this round!`;
       desc.textContent = "Play another round or reset the game";
       return;
     }
 
     // in case of draw
+    title.textContent = "This round was a draw!";
+    desc.textContent = "Play another round or reset the game";
   }
 
   /**
