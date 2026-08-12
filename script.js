@@ -305,7 +305,6 @@ const screenController = (function () {
     // note: so now we have to check for pos taken? 3 in a row, board full etc etc. But.. instead of doing it here, we have separated the logic inside its own class (SEPARATION OF CONCERNS). So, the DOM controller has its own responsibities and can only interact through the API and read things to dipslay stuff in the UI. (it is the outer world gateway which interacts with the application logic and state.) Those are essentially internal state checks and settings things (like swtiching player internally) which are all the responsibility of the domain modeling classes. As you can see below, instead of doing all this, we just provide input from the DOM into the game class to actually modify all this state internally instead.
 
     const turnResult = game.playerTurn(row, col, positionTakenAnimation);
-    if (turnResult === "draw") debugger;
     switch (turnResult) {
       case "positionTaken":
         positionTakenAnimation(row, col);
@@ -353,7 +352,7 @@ const screenController = (function () {
    * @param {string} state home || endRoundWinner || endRoundDraw || game
    */
   function switchScreen(newState) {
-    const state = newState;
+    state = newState;
 
     // change screen displayed
     modifyClassesByScreenState(state);

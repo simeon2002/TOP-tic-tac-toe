@@ -2,7 +2,7 @@
 
 This is a tictactoe game with focus on creating separations of concern between application logic and UI. The UI should merely just update the state and invoke applicaiton logic and react upon it by reading f.e. state
 
-**Live demo: [Website](https://simeon2002.github.io/TOP-library/)**
+**Live demo: [Website](https://simeon2002.github.io/TOP-tic-tac-toe/)**
 
 # App views
 
