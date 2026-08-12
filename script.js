@@ -120,10 +120,6 @@ const createGameBoard = function (rows, columns) {
     };
 
     const markerCoords = getMarkerCoords();
-    // console.log(checkMatch("horizontal", markerCoords));
-    // console.log(checkMatch("vertical", markerCoords));
-    // console.log(checkMatch("diagonalLeftUpDown", markerCoords));
-    // console.log(checkMatch("diagonalLeftDownUp", markerCoords));
 
     return [
       checkMatch("horizontal", markerCoords),
@@ -163,10 +159,6 @@ const createGameBoard = function (rows, columns) {
     return board.every(row => row.every(col => col !== ""));
   }
 
-  function isCellEmpty(row, col) {
-    return board[row][col] === "";
-  }
-
   // getter and setter methods
   function getRowsAndCols() {
     return { rows, columns };
@@ -176,7 +168,7 @@ const createGameBoard = function (rows, columns) {
     return board;
   }
 
-  return { init, printBoard, getBoard, clearBoard, isCellEmpty, isPositionTaken, isFull, getRowsAndCols, makeMove, has3InARow };
+  return { init, getBoard, clearBoard, isPositionTaken, isFull, getRowsAndCols, makeMove, has3InARow };
 };
 
 // Game module pattern function
@@ -188,170 +180,72 @@ const createGame = function () {
    */
   function startGame(...newPlayers) {
     console.log("Starting a game...");
-    // init state
+    // init game state
     board = createGameBoard(3, 3);
     board.init();
     players = newPlayers;
     currentPlayer = 0;
-
-    // Start a round
-    // while (true) {
-    //   const playRoundFlag = confirm("Start a round");
-    //   if (playRoundFlag) {
-    //     console.log("Starting a round...");
-    //     setTimeout(() => {
-    //       playRoundDemo();
-    //     }, 5000);
-    //     break;
-    //   }
-    // }
-  }
-
-  /**
-   * Displays initial state of the board
-   */
-  function displayGameState() {
-    players.forEach(player => player.printPlayerInfo());
-    board.printBoard();
-  }
-
-  /**
-   * Play a round of tic tac toe
-   */
-  function playRoundDemo() {
-    const { rows, cols } = board.getRowsAndCols();
-    board.clearBoard();
-    displayGameState();
-
-    while (true) {
-      const position = prompt(
-        `Please provide a , separated position (e.g. 1,2 = row,col) from 1 to ${rows} for rows and from 1 to ${cols} for columns`,
-      );
-
-      const [row, col] = position.split(",").map(pos => +pos - 1);
-
-      // player takes turn
-      const gameEndedFlag = playerTurn(row, col);
-      // temporary to start another round
-      if (gameEndedFlag) {
-        const nextStep = prompt("type 'play' to play another round, else game is reset");
-        if (nextStep !== "play") {
-          // resetGame()
-          console.log("Ending game....");
-          break;
-        }
-        playRoundDemo(); // playing a round using recursion
-        break;
-      }
-    }
-  }
-
-  /**
-   * Players' plays a turn on the board (with console)
-   *
-   */
-  function playerTurnDemo(rowIdx, colIdx) {
-    // input validation
-    const { rows, columns } = board.getRowsAndCols();
-    if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
-      displayMessage("Please provide a row index and column index within the range");
-      return;
-    }
-
-    // Position already filled?
-    if (board.isPositionTaken(rowIdx, colIdx)) {
-      displayMessage("Position has already been taken, please provide another!");
-      return;
-    }
-
-    // Current player makes move
-    board.makeMove([rowIdx, colIdx], players[currentPlayer].getMarker());
-
-    // check if 3 in a row?
-    if (board.has3InARow(players[currentPlayer].getMarker())) {
-      displayMessage(`${players[currentPlayer].getName()} with marker ${players[currentPlayer].getMarker()} has 3 in a row!`);
-      players[currentPlayer].incrementScore();
-      displayGameState();
-      return true;
-    }
-
-    // check if board is full
-    if (board.isFull()) {
-      displayMessage("The board is full... a draw!");
-      board.printBoard();
-      return true;
-    }
-
-    // switch player turn
-    currentPlayer = 1 - currentPlayer;
-
-    // dipslay new player's turn messgae
-    console.log(`${players[currentPlayer].getName()}'s turn`);
-
-    // display board again
-    board.printBoard();
   }
 
   /**
    * Players' plays a turn on the board
-   *
+   * @param {number} rowIdx board row index
+   * @param {number} colIdx board column index
+   * @returns "pending" if game no game ending move || "positionTaken" if position is already taken || "winner" if winner is present || "draw" if game ends in a draw
    */
-  function playerTurn(rowIdx, colIdx, handlePositionTaken, displayGrid, switchScreen) {
+  function playerTurn(rowIdx, colIdx) {
     // input validation
-    const { rows, columns } = board.getRowsAndCols();
-    if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
-      displayMessage("Please provide a row index and column index within the range");
-      return;
-    }
+    if (!validatePlayerInput(rowIdx, colIdx)) return;
 
     // Position already filled?
     if (board.isPositionTaken(rowIdx, colIdx)) {
-      displayMessage("Position has already been taken, please provide another!");
-      handlePositionTaken(rowIdx, colIdx);
-      return;
+      return "positionTaken";
     }
 
     // Current player makes move
     board.makeMove([rowIdx, colIdx], players[currentPlayer].getMarker());
 
     // check if 3 in a row?
-    if (board.has3InARow(players[currentPlayer].getMarker())) {
-      displayMessage(`${players[currentPlayer].getName()} with marker ${players[currentPlayer].getMarker()} has 3 in a row!`);
-      players[currentPlayer].incrementScore();
-      displayGrid(board.getBoard());
-      console.log("dispaying winning screen");
-      switchScreen("endRoundWinner");
-      board.clearBoard();
-      displayGameState();
-      return true;
-    }
+    if (handleCase3InARow()) return "winner";
 
     // check if board is full
-    if (board.isFull()) {
-      displayMessage("The board is full... a draw!");
-      board.clearBoard();
-      switchScreen("endRoundDraw");
-      board.printBoard();
-      return true;
-    }
+    if (handleCaseBoardFull()) return "draw";
 
     // switch player turn
     currentPlayer = 1 - currentPlayer;
 
-    // dipslay new player's turn messgae
-    console.log(`${players[currentPlayer].getName()}'s turn`);
-
-    // display board again
-    board.printBoard();
-    displayGrid(board.getBoard());
+    return "pending";
   }
 
-  function isValidTurn(rowIdx, colIdx, rows, columns) {
-    return rowIdx >= 0 && rowIdx < rows && colIdx >= 0 && colIdx < columns;
+  function validatePlayerInput(rowIdx, colIdx) {
+    const isValidTurn = (rowIdx, colIdx, rows, columns) => {
+      return rowIdx >= 0 && rowIdx < rows && colIdx >= 0 && colIdx < columns;
+    };
+
+    const { rows, columns } = board.getRowsAndCols();
+    if (!isValidTurn(rowIdx, colIdx, rows, columns)) {
+      console.error("Please provide a row index and column index within the range");
+      return false;
+    }
+
+    return true;
   }
 
-  function displayMessage(message) {
-    console.log(message);
+  function handleCase3InARow() {
+    if (board.has3InARow(players[currentPlayer].getMarker())) {
+      players[currentPlayer].incrementScore();
+      board.clearBoard();
+      return true;
+    }
+    return false;
+  }
+
+  function handleCaseBoardFull() {
+    if (board.isFull()) {
+      board.clearBoard();
+      return true;
+    }
+    return false;
   }
 
   // gettter and setter methods
@@ -359,58 +253,20 @@ const createGame = function () {
     return board.getBoard();
   }
 
-  function isCellEmpty(row, col) {
-    return board.isCellEmpty(row, col);
+  function getPlayersInfo() {
+    return players.map(getPlayerInfo);
   }
 
-  function getPlayersScore() {
-    return players.map(player => ({ [player.getName()]: player.getScore() }));
+  function getWinningPlayerInfo() {
+    const winner = players[currentPlayer];
+    return getPlayerInfo(winner);
   }
 
-  function getPlayers() {
-    return players;
+  function getPlayerInfo(player) {
+    return { name: player.getName(), score: player.getScore(), marker: player.getMarker() };
   }
 
-  function getWinningPlayer() {
-    return players[currentPlayer];
-  }
-
-  function playDemoGame() {
-    game.playerTurn(2, 2);
-    // p2
-    game.playerTurn(1, 0);
-    // p3
-    game.playerTurn(2, 1);
-    // p4
-
-    game.playerTurn(1, 0);
-    // p5
-    game.playerTurn(2, 0);
-    game.playerTurn(1, 1);
-    // p6
-    game.playerTurn(1, 2);
-    game.playerTurn(1, 1);
-    game.playerTurn(0, 2);
-    game.playerTurn(0, 1);
-    game.playerTurn(0, 0);
-    console.log(board.has3InARow(players[currentPlayer].getMarker()));
-  }
-
-  function playDemoGameDiagonal() {
-    board.clearBoard();
-    game.playerTurn(0, 0);
-    game.playerTurn(0, 1);
-    game.playerTurn(1, 1);
-    game.playerTurn(1, 0);
-    game.playerTurn(2, 2);
-    game.playerTurn(2, 1);
-    game.playerTurn(2, 0);
-    game.playerTurn(1, 0);
-    game.playerTurn(0, 2);
-    console.log(board.has3InARow(players[currentPlayer].getMarker()));
-  }
-
-  return { startGame, playerTurn, getBoardGrid, isCellEmpty, getPlayersScore, getPlayers, getWinningPlayer };
+  return { startGame, playerTurn, getBoardGrid, getPlayersInfo, getWinningPlayerInfo };
 };
 
 const screenController = (function () {
@@ -422,6 +278,7 @@ const screenController = (function () {
   const gameGrid = playContainer.querySelector(".grid--game");
   const playerCards = playContainer.querySelectorAll(".player-card");
   const playerCardsEndScreenContainer = startContainer.querySelector(".player-scores");
+  const state = "home";
 
   init();
 
@@ -437,18 +294,34 @@ const screenController = (function () {
 
   function handlePlayBtnClick(e) {
     // (for now only handle initial game state)
-    showGrid(game.getBoardGrid());
-    switchScreen("game");
+    switchScreen("game"); // could have used a high-order function as well to handle this (closure) as well but this is good.
   }
 
   function handleGridElClick(e) {
     const gridEl = e.target.closest(".btn--grid");
+    if (!gridEl) return;
     const [row, col] = [gridEl.dataset.row, gridEl.dataset.col];
-    console.log(gridEl);
 
     // note: so now we have to check for pos taken? 3 in a row, board full etc etc. But.. instead of doing it here, we have separated the logic inside its own class (SEPARATION OF CONCERNS). So, the DOM controller has its own responsibities and can only interact through the API and read things to dipslay stuff in the UI. (it is the outer world gateway which interacts with the application logic and state.) Those are essentially internal state checks and settings things (like swtiching player internally) which are all the responsibility of the domain modeling classes. As you can see below, instead of doing all this, we just provide input from the DOM into the game class to actually modify all this state internally instead.
 
-    game.playerTurn(row, col, positionTakenAnimation, showGrid, switchScreen);
+    const turnResult = game.playerTurn(row, col, positionTakenAnimation);
+    if (turnResult === "draw") debugger;
+    switch (turnResult) {
+      case "positionTaken":
+        positionTakenAnimation(row, col);
+        break;
+      case "winner":
+        switchScreen("endRoundWinner");
+        break;
+      case "draw":
+        switchScreen("endRoundDraw");
+        break;
+      case "pending":
+        switchScreen("game");
+        switchActivePlayer();
+      default:
+        break;
+    }
   }
 
   /**
@@ -469,7 +342,6 @@ const screenController = (function () {
 
     gameGrid.innerHTML = "";
     gameGrid.insertAdjacentHTML("afterbegin", html);
-    switchActivePlayer();
   }
 
   function switchActivePlayer() {
@@ -480,11 +352,23 @@ const screenController = (function () {
    * Show the screen based on what state it is ine
    * @param {string} state home || endRoundWinner || endRoundDraw || game
    */
-  function switchScreen(state) {
+  function switchScreen(newState) {
+    const state = newState;
+
+    // change screen displayed
     modifyClassesByScreenState(state);
 
-    if (state === "endRoundWinner") changeEndRoundContent(true);
-    if (state === "endRoundDraw") changeEndRoundContent(false);
+    // change content based on screen state
+    if (state === "game") {
+      showGrid(game.getBoardGrid());
+      // showGrid(game.getBoardGrid());
+    }
+    if (state === "endRoundWinner") {
+      changeEndRoundContent(true);
+    }
+    if (state === "endRoundDraw") {
+      changeEndRoundContent(false);
+    }
 
     populatePlayerCards();
   }
@@ -493,8 +377,8 @@ const screenController = (function () {
    * Modify CSS classes to change screen shown
    * @param {string} state State of the screen to display
    */
-  function modifyClassesByScreenState(state) {
-    if (state === "game") {
+  function modifyClassesByScreenState(screenState) {
+    if (screenState === "game") {
       startContainer.classList.add("hidden");
       playContainer.classList.remove("hidden");
       resetBtn.classList.add("hidden");
@@ -503,14 +387,14 @@ const screenController = (function () {
       playerCards[1].classList.remove("player-card--active");
     }
 
-    if (state === "home") {
+    if (screenState === "home") {
       startContainer.classList.remove("hidden");
       playContainer.classList.add("hidden");
       resetBtn.classList.add("hidden");
       playerCardsEndScreenContainer.classList.add("hidden-none");
     }
 
-    if (state === "endRoundWinner" || state === "endRoundDraw") {
+    if (screenState === "endRoundWinner" || screenState === "endRoundDraw") {
       startContainer.classList.remove("hidden");
       playContainer.classList.add("hidden");
       playerCardsEndScreenContainer.classList.remove("hidden-none");
@@ -550,13 +434,10 @@ const screenController = (function () {
     const title = startContainer.querySelector(".heading-primary");
     const desc = startContainer.querySelector(".desc");
 
-    // dispay end screen
-    switchScreen("endRound");
-
     // in case of winner
     if (hasWinner) {
-      const winningPlayer = game.getWinningPlayer();
-      const winnerName = winningPlayer.getName();
+      const winningPlayer = game.getWinningPlayerInfo();
+      const winnerName = winningPlayer.name;
 
       title.textContent = `${winnerName} won this round!`;
       desc.textContent = "Play another round or reset the game";
@@ -572,29 +453,16 @@ const screenController = (function () {
    * Populate playcards with player names and scores
    */
   function populatePlayerCards() {
-    const players = game.getPlayers();
+    const players = game.getPlayersInfo();
     console.log(players);
 
     const populateCard = (card, idx) => {
       const player = players[idx];
-      card.querySelector(".player-name").textContent = player.getName();
-      card.querySelector(".player-score").textContent = player.getScore();
+      card.querySelector(".player-name").textContent = player.name;
+      card.querySelector(".player-score").textContent = player.score;
     };
 
     playerCards.forEach(populateCard);
     playerCardsEndScreenContainer.querySelectorAll(".player-card").forEach(populateCard);
   }
 })();
-
-// start a game
-// game.startGame(createPlayer("Simeon", "O"), createPlayer("Darina", "X"));
-
-// game.playerTurn(4, 4);
-// game.playerTurn(-4, 4);
-// game.playerTurn(undefined, 4);
-// p1
-// game.playDemoGame();
-// game.playDemoGameDiagonal();
-
-// testing cases in the game...
-// game.playRound();
